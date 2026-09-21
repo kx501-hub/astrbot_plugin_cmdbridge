@@ -1,0 +1,7 @@
+name: astrbot_plugin_cmdbridge
+display_name: CmdBridge
+version: "0.1.0"
+author: "Kx501"
+desc: 将白名单插件的指令桥接为 LLM 函数工具，供 Agent 自动调用。
+repo: "https://github.com/kx501-hub/astrbot_plugin_cmdbridge"
+tags: ["工具", "指令"]

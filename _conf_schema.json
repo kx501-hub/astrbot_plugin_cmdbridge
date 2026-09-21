@@ -1,0 +1,32 @@
+{
+  "plugins": {
+    "description": "白名单插件",
+    "type": "list",
+    "default": [],
+    "hint": "填写目标插件 metadata.yaml 中的 name，例如 astrbot_plugin_xxx。仅这些插件的指令会被桥接为 LLM 工具。"
+  },
+  "exclude_commands": {
+    "description": "排除的指令",
+    "type": "list",
+    "default": [
+      "help",
+      "stop",
+      "reset",
+      "new",
+      "sid",
+      "stats",
+      "plugin",
+      "name",
+      "cmdbridge"
+    ],
+    "hint": "按完整指令名、末级片段或 handler 函数名匹配，不区分大小写。管理员权限指令会自动排除。"
+  },
+  "overrides": {
+    "description": "工具描述与参数覆盖（JSON）",
+    "type": "text",
+    "default": "{}",
+    "hint": "每个工具单独按优先级匹配：1) 工具全名（如 bit_torrent_bt） 2) 插件name:指令名 3) 仅指令名(唯一时)。示例：{\"astrbot_plugin_xxx:btp\": {\"query\": \"关键词\"}}",
+    "editor_mode": true,
+    "editor_language": "json"
+  }
+}
