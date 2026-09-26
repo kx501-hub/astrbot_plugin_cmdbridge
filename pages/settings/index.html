@@ -3,8 +3,21 @@
 <body><main>
 <header><div><div class="eyebrow">CMDBRIDGE</div><h1>让指令成为工具</h1><p id="summary" class="muted">正在读取指令目录…</p></div><div class="actions"><button id="reload" disabled>重新载入</button><button id="refresh" disabled>刷新已保存的桥接</button><button id="save" class="primary" disabled>保存并应用</button></div></header>
 <div id="status" class="status" role="status" aria-live="polite">正在连接 AstrBot…</div>
-<section><h2>允许桥接的插件</h2><p class="muted">勾选后保存即可桥接。管理员指令、禁用指令和指令组入口会自动跳过。</p><div id="plugins" class="plugin-list"></div></section>
+<section><details><summary>允许桥接的插件 <span id="plugin-summary" class="pill"></span></summary><p class="muted">勾选后保存即可桥接。管理员指令、禁用指令和指令组入口会自动跳过。</p><label>查找插件<input id="plugin-search" type="search" placeholder="插件名称" disabled></label><div id="plugins" class="plugin-list"></div></details></section>
 <section><h2>排除指令</h2><label>每行一个完整指令名、末级片段或处理函数名<textarea id="excludes" rows="4" disabled></textarea></label><p class="muted">与原配置一致，不区分大小写；完整指令名相同的多个插件会同时被排除。</p></section>
-<section><h2>指令 → 工具</h2><label>搜索插件、指令或工具<input id="search" type="search" placeholder="输入名称筛选" disabled></label><p class="muted">状态反映最近一次读取的运行情况。说明编辑属于草稿，保存后才会刷新桥接；下方操作不会执行指令。</p><div id="commands"></div></section>
+<section id="command-section">
+  <h2>指令 → 工具</h2>
+  <div class="toolbar">
+    <label class="search-field">搜索指令与说明<input id="search" type="search" placeholder="插件、指令、工具、说明；空格分隔关键词" disabled></label>
+    <label>所属插件<select id="plugin-filter" disabled><option value="">全部插件</option></select></label>
+    <label>运行状态<select id="state-filter" disabled><option value="all">全部状态</option><option value="registered">已桥接</option><option value="pending">符合条件，尚未注册</option><option value="skipped">已跳过</option><option value="overridden">有专属覆盖（草稿）</option></select></label>
+    <label>每页条数<select id="page-size" disabled><option value="25">25 条</option><option value="50">50 条</option><option value="100">100 条</option></select></label>
+  </div>
+  <p class="muted">运行状态来自最近一次读取。展开指令后编辑说明；翻页与筛选保留草稿，保存后才刷新桥接。下方操作不会执行指令。</p>
+  <div class="pagination"><span id="result-count" role="status" aria-live="polite"></span><div class="actions"><button id="clear-filters" disabled>清除筛选</button><button id="collapse" disabled>收起本页</button></div></div>
+  <nav class="pagination" aria-label="顶部指令分页"><button id="previous-top" disabled aria-label="上一页（顶部）">上一页</button><span id="page-count-top"></span><button id="next-top" disabled aria-label="下一页（顶部）">下一页</button></nav>
+  <div id="commands"></div>
+  <nav class="pagination" aria-label="指令分页"><button id="previous" disabled>上一页</button><label class="page-jump">页码<input id="page-number" type="number" min="1" value="1" disabled></label><span id="page-count"></span><button id="next" disabled>下一页</button></nav>
+</section>
 <section><details><summary>高级覆盖配置（JSON）</summary><p class="muted">兼容原有匹配规则，保留未安装插件的覆盖项。工具全名的覆盖优先于插件名或简写。</p><textarea id="overrides" rows="12" spellcheck="false" disabled aria-label="覆盖配置 JSON"></textarea><button id="apply-json" disabled>应用 JSON 到草稿</button></details></section>
 </main></body></html>
