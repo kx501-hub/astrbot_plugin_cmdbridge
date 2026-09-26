@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CmdBridge 指令桥接</title><link rel="stylesheet" href="./style.css"><script type="module" src="./app.js"></script></head>
+<body><main>
+<header><div><div class="eyebrow">CMDBRIDGE</div><h1>让指令成为工具</h1><p id="summary" class="muted">正在读取指令目录…</p></div><div class="actions"><button id="reload" disabled>重新载入</button><button id="refresh" disabled>刷新已保存的桥接</button><button id="save" class="primary" disabled>保存并应用</button></div></header>
+<div id="status" class="status" role="status" aria-live="polite">正在连接 AstrBot…</div>
+<section><h2>允许桥接的插件</h2><p class="muted">勾选后保存即可桥接。管理员指令、禁用指令和指令组入口会自动跳过。</p><div id="plugins" class="plugin-list"></div></section>
+<section><h2>排除指令</h2><label>每行一个完整指令名、末级片段或处理函数名<textarea id="excludes" rows="4" disabled></textarea></label><p class="muted">与原配置一致，不区分大小写；完整指令名相同的多个插件会同时被排除。</p></section>
+<section><h2>指令 → 工具</h2><label>搜索插件、指令或工具<input id="search" type="search" placeholder="输入名称筛选" disabled></label><p class="muted">状态反映最近一次读取的运行情况。说明编辑属于草稿，保存后才会刷新桥接；下方操作不会执行指令。</p><div id="commands"></div></section>
+<section><details><summary>高级覆盖配置（JSON）</summary><p class="muted">兼容原有匹配规则，保留未安装插件的覆盖项。工具全名的覆盖优先于插件名或简写。</p><textarea id="overrides" rows="12" spellcheck="false" disabled aria-label="覆盖配置 JSON"></textarea><button id="apply-json" disabled>应用 JSON 到草稿</button></details></section>
+</main></body></html>

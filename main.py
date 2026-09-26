@@ -28,6 +28,7 @@ from astrbot.core.star.command_management import (
 from astrbot.core.star.filter.command import CommandFilter, GreedyStr
 from astrbot.core.star.filter.command_group import CommandGroupFilter
 from astrbot.core.star.star import StarMetadata, star_map
+from .page_api import BridgePageAPI
 
 _FALLBACK_QUERY_PARAM = "query"
 _OVERRIDE_DESC_KEYS = frozenset({"description", "desc"})
@@ -438,6 +439,7 @@ class CmdBridgeStar(Star):
         self.config = config
         self._registered_tools: set[str] = set()
         self._registered_by_plugin: dict[str, set[str]] = {}
+        self._page_api = BridgePageAPI(self)
 
     def _unregister_tools(self, tool_names: set[str]) -> None:
         if not tool_names:
@@ -475,25 +477,72 @@ class CmdBridgeStar(Star):
         whitelist: set[str],
         exclude_commands: set[str],
     ) -> bool:
-        if desc.is_group or not desc.enabled:
-            return False
-        if desc.plugin_name not in whitelist:
-            return False
+        return not CmdBridgeStar._skip_reason(desc, whitelist, exclude_commands)
 
+    @staticmethod
+    def _skip_reason(desc, whitelist, exclude_commands) -> str:
+        if desc.is_group or isinstance(desc.filter_ref, CommandGroupFilter):
+            return "指令组入口"
+        if not desc.enabled:
+            return "指令已禁用"
         plugin_meta = star_map.get(desc.module_path)
         if plugin_meta and not plugin_meta.activated:
-            return False
+            return "插件未启用"
         if _determine_permission(desc.handler) == "admin":
-            return False
-
+            return "管理员指令，自动排除"
+        if desc.plugin_name not in whitelist:
+            return "插件未加入白名单"
         effective = (desc.effective_command or desc.handler_name or "").strip()
         if not effective:
-            return False
+            return "指令名为空"
         if _is_excluded_command(effective, desc.handler_name, exclude_commands):
-            return False
-        if isinstance(desc.filter_ref, CommandGroupFilter):
-            return False
-        return True
+            return "命中排除项"
+        return ""
+
+    def describe_bridges(self) -> dict:
+        """Read inventory without registering tools or executing any command."""
+        whitelist, excludes, overrides = _parse_bridge_settings(self.config)
+        targets = self._collect_bridge_targets(whitelist=whitelist, exclude_commands=excludes)
+        counts = _count_bare_override_keys(targets)
+        rows = []
+        plugins = {
+            meta.name: {"name": meta.name, "title": meta.display_name or meta.name,
+                        "enabled": meta.activated}
+            for meta in star_map.values() if meta.name
+        }
+        for name in whitelist:
+            plugins.setdefault(name, {"name": name, "title": name, "enabled": False})
+        for desc in _collect_descriptors(include_sub_commands=True):
+            meta = star_map.get(desc.module_path)
+            effective = (desc.effective_command or desc.handler_name or "").strip()
+            name = _make_tool_name(meta, effective)
+            reason = self._skip_reason(desc, whitelist, excludes)
+            row = {
+                "plugin": desc.plugin_name, "command": effective, "tool": name,
+                "reason": reason,
+                "registered": not reason and name in self._registered_by_plugin.get(desc.plugin_name, set()),
+                "description": "", "params": [],
+            }
+            if not desc.is_group and not isinstance(desc.filter_ref, CommandGroupFilter):
+                try:
+                    entry = _resolve_override_entry(
+                        overrides, tool_name=name, effective=effective,
+                        plugin_name=desc.plugin_name, handler_name=desc.handler_name,
+                        bare_key_counts=counts,
+                    )
+                    description, params = _normalize_override_cfg(entry)
+                    handler = desc.handler.handler
+                    row["description"] = _build_tool_description(handler, effective, meta, override=description)
+                    row["params"], _ = _build_param_schema(
+                        handler, desc.filter_ref if isinstance(desc.filter_ref, CommandFilter) else None,
+                        param_overrides=params,
+                    )
+                except Exception:
+                    row["inspection_error"] = "参数信息读取失败，请查看后台日志"
+                    logger.exception("CmdBridge: 无法读取指令 %s", effective)
+            rows.append(row)
+        return {"plugins": sorted(plugins.values(), key=lambda p: p["name"]),
+                "commands": rows, "registered_count": len(self._registered_tools)}
 
     def _register_bridge(
         self,

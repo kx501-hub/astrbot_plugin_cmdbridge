@@ -3,7 +3,7 @@
     "description": "白名单插件",
     "type": "list",
     "default": [],
-    "hint": "填写目标插件 metadata.yaml 中的 name，例如 astrbot_plugin_xxx。仅这些插件的指令会被桥接为 LLM 工具。"
+    "hint": "填写目标插件 metadata.yaml 中的 name，例如 astrbot_plugin_xxx。仅这些插件的指令会被桥接为 LLM 工具。 也可在插件 Pages → 指令桥接中勾选。"
   },
   "exclude_commands": {
     "description": "排除的指令",
